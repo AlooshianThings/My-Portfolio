@@ -12,11 +12,11 @@
      instead of a dead link.
      --------------------------------------------------------------- */
   const CONFIG = {
-    email: 'yaship790@gmail',
-    github: 'https://github.com/AlooshianThings',
-    linkedin: 'https://www.linkedin.com/in/alooshian-things/',
+    email: '',      // e.g. 'ayushi@example.com'
+    github: '',     // e.g. 'https://github.com/your-username'
+    linkedin: '',   // e.g. 'https://www.linkedin.com/in/your-handle'
     repos: {
-      aaa: 'https://aaa-travels.onrender.com'
+      aaa: ''       // optional: link to the AAA Travels repository
     }
   };
 
@@ -29,6 +29,7 @@
   const mqMobile = window.matchMedia('(max-width: 820px)');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = () => mqMobile.matches;
+  const sfx = n => { if (window.SFX) window.SFX.play(n); };
 
   const ICONS = {
     about: '<circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c.8-4 3.7-6 7.5-6s6.7 2 7.5 6"/>',
@@ -90,6 +91,7 @@
         </svg>
       </div>
       <p class="lbl">USER 001 // LOGGED IN</p>
+      <p class="verify" id="verify"><i class="led"></i><span>SCANNING IDENTITY...</span></p>
       <dl class="dl-rows">
         <div><dt>NAME</dt><dd>Ayushi Pal</dd></div>
         <div><dt>ORIGIN</dt><dd>BCA / Computer Applications</dd></div>
@@ -117,17 +119,41 @@
     </article>
   </div>`;
 
+  const aboutMount = (root, w) => {
+    const lead = $('.doc__lead', root), full = lead.textContent, v = $('#verify', root);
+    lead.setAttribute('aria-label', full);
+    const timers = [];
+    sfx('scan');
+    timers.push(setTimeout(() => { v.classList.add('is-ok'); $('span', v).textContent = 'IDENTITY VERIFIED'; sfx('ok'); }, reduceMotion ? 0 : 1100));
+    if (!reduceMotion) {
+      lead.textContent = ''; lead.classList.add('is-typing');
+      let i = 0;
+      const iv = setInterval(() => {
+        i += 2; lead.textContent = full.slice(0, i);
+        if (i % 8 === 0) sfx('key');
+        if (i >= full.length) { clearInterval(iv); lead.classList.remove('is-typing'); }
+      }, 26);
+      w.cleanup.push(() => clearInterval(iv));
+    }
+    w.cleanup.push(() => timers.forEach(clearTimeout));
+  };
+
   /* ---- MEMORY ---- */
   const memoryHTML = () => `
   <p class="lbl" style="margin-bottom:22px">/var/log/ayushi.os — read only</p>
   <ol class="log">
-    <li class="entry"><time>2022</time><div><span class="lvl">INIT</span><h3>System initialized</h3><p>BCA begins. First lines of code, first errors, first fixes.</p></div></li>
-    <li class="entry"><time>2023 to 2024</time><div><span class="lvl">LOAD</span><h3>Skills, projects, college activities</h3><p>Languages and frameworks installed. Projects compiled. Hosting, anchoring and script writing run in parallel with IEEE and college activities.</p></div></li>
-    <li class="entry"><time>2025</time><div><span class="lvl">MODE</span><h3>Professional mode activated</h3><p>Dubbing project management. Real deadlines, real releases, several languages at once.</p></div></li>
-    <li class="entry"><time>2026</time><div><span class="lvl">RECONFIG</span><h3>System reconfiguration</h3><p>Technology becomes the primary direction. Current chapter: MCA.</p></div></li>
-    <li class="entry entry--now"><time>NOW</time><div><span class="lvl lvl--pend">PENDING</span><h3>Cybersecurity module: loading...</h3><p>No ETA. Installation is happening in real time.</p><div class="loadbar" role="progressbar" aria-label="Cybersecurity module loading, no known completion time"></div></div></li>
+    <li style="--k:0" class="entry"><time>2022</time><div><span class="lvl">INIT</span><h3>System initialized</h3><p>BCA begins. First lines of code, first errors, first fixes.</p></div></li>
+    <li style="--k:1" class="entry"><time>2023 to 2024</time><div><span class="lvl">LOAD</span><h3>Skills, projects, college activities</h3><p>Languages and frameworks installed. Projects compiled. Hosting, anchoring and script writing run in parallel with IEEE and college activities.</p></div></li>
+    <li style="--k:2" class="entry"><time>2025</time><div><span class="lvl">MODE</span><h3>Professional mode activated</h3><p>Dubbing project management. Real deadlines, real releases, several languages at once.</p></div></li>
+    <li style="--k:3" class="entry"><time>2026</time><div><span class="lvl">RECONFIG</span><h3>System reconfiguration</h3><p>Technology becomes the primary direction. Current chapter: MCA.</p></div></li>
+    <li style="--k:4" class="entry entry--now"><time>NOW</time><div><span class="lvl lvl--pend">PENDING</span><h3>Cybersecurity module: loading...</h3><p>No ETA. Installation is happening in real time.</p><div class="loadbar" role="progressbar" aria-label="Cybersecurity module loading, no known completion time"></div></div></li>
   </ol>
   <p class="log__tail">&gt; awaiting next entry<span class="cursor" aria-hidden="true"></span></p>`;
+
+  const memoryMount = (root, w) => {
+    const ts = $$('.entry', root).map((_, i) => setTimeout(() => sfx('tick'), 300 + i * 240));
+    w.cleanup.push(() => ts.forEach(clearTimeout));
+  };
 
   /* ---- SKILLS ---- */
   const SKILLS = [
@@ -148,6 +174,11 @@
     <span><i class="led" style="background:transparent;border:1.5px solid var(--plum);box-shadow:none"></i> exploring</span>
     <span><i class="led" style="background:transparent;border:1.5px dashed var(--plum);box-shadow:none"></i> queued</span>
   </div>
+  <div class="const" aria-hidden="true">
+    <canvas></canvas>
+    <span class="const__hint">DRAG TO ROTATE</span>
+    <div class="const__key"><span>installed <i class="led"></i></span><span>active <i class="led" style="background:var(--deep)"></i></span><span>exploring <i class="led" style="background:transparent;border:1.5px solid var(--plum);box-shadow:none"></i></span><span>queued <i class="led" style="background:transparent;border:1.5px dashed var(--plum);box-shadow:none"></i></span></div>
+  </div>
   ${SKILLS.map(g => `
     <section class="bay bay--${g.key}" aria-label="${g.title}">
       <div class="bay__h"><h3>${g.title}</h3><p>${g.blurb}</p></div>
@@ -156,17 +187,25 @@
       </ul>
     </section>`).join('')}
   <p class="modinfo" id="modInfo" aria-live="off">Select a module to read its header.</p>`;
-  const skillsMount = root => {
+  const skillsMount = (root, w) => {
     const info = $('#modInfo', root);
+    const STATE = { installed: 'installed', active: 'active', exploring: 'exploring', next: 'queued' };
+    const describe = (name, type, state) => `MODULE: ${name.toLowerCase()}   TYPE: ${type}   STATE: ${STATE[state]}`;
     const show = e => {
       const b = e.target.closest('.mod');
-      if (!b) return;
-      const state = { installed: 'installed', active: 'active', exploring: 'exploring', next: 'queued' }[b.dataset.state];
-      info.textContent = `MODULE: ${b.dataset.mod.toLowerCase()}   TYPE: ${b.dataset.type}   STATE: ${state}`;
+      if (b) info.textContent = describe(b.dataset.mod, b.dataset.type, b.dataset.state);
     };
     root.addEventListener('pointerover', show);
     root.addEventListener('focusin', show);
     root.addEventListener('click', show);
+    if (window.FX && FX.constellation) {
+      const items = [];
+      SKILLS.forEach(g => g.items.forEach(([name, type]) => items.push({ name, type, state: g.key })));
+      const c = FX.constellation($('.const canvas', root), items, {
+        onHover: it => { if (it) info.textContent = describe(it.name, it.type, it.state); }
+      });
+      w.cleanup.push(() => c.destroy());
+    }
   };
 
   /* ---- PROJECTS ---- */
@@ -210,7 +249,7 @@
       <div><dt>TYPE</dt><dd>FULL-STACK WEB APPLICATION</dd></div>
       <div><dt>TECH STACK</dt><dd class="tags"><span class="tag">Python</span><span class="tag">Django</span><span class="tag">SQL</span><span class="tag">JavaScript</span><span class="tag">HTML</span><span class="tag">CSS</span></dd></div>
     </dl>
-    ${CONFIG.repos.aaa ? `<a class="link-btn" href="${CONFIG.repos.aaa}" target="_blank" rel="noopener noreferrer">LAUNCH</a>` : ''}`;
+    ${CONFIG.repos.aaa ? `<a class="link-btn" href="${CONFIG.repos.aaa}" target="_blank" rel="noopener noreferrer">OPEN REPOSITORY</a>` : ''}`;
 
   const modulesPanel = () => `
     <div class="layers">
@@ -257,6 +296,7 @@
       const b = e.target.closest('.seat');
       if (!b || b.disabled || done) return;
       const id = b.dataset.seat, i = chosen.indexOf(id);
+      sfx('click');
       if (i > -1) {
         chosen.splice(i, 1);
         b.classList.remove('is-sel'); b.setAttribute('aria-pressed', 'false');
@@ -275,7 +315,7 @@
     });
     confirmBtn.addEventListener('click', () => {
       if (!chosen.length) return;
-      done = true;
+      done = true; sfx('unlock');
       $$('input', pax).forEach(i => (i.disabled = true));
       const id = 'SIM-' + Math.random().toString(36).slice(2, 8).toUpperCase();
       out.hidden = false;
@@ -475,7 +515,7 @@
       n++;
       const s = document.createElement('span');
       s.className = 'btabx'; s.textContent = TAB_NAMES[(n - 1) % TAB_NAMES.length];
-      strip.appendChild(s);
+      strip.appendChild(s); sfx('blip');
     };
     const tick = () => {
       if (n >= 14) { timer = null; msg.textContent = 'BUG-005 reproduced: 14 tabs open, none closed. This is the bug.'; return; }
@@ -590,7 +630,7 @@
       const u = e.target.closest('[data-unset]');
       if (u) { toast(`${u.dataset.unset.toUpperCase()} link is not configured yet. Set it in script.js (CONFIG).`); return; }
       if (e.target.closest('[data-save]')) {
-        $('#slotCard', root).classList.add('is-saved');
+        $('#slotCard', root).classList.add('is-saved'); sfx('unlock');
         $('.savemsg', root).textContent = 'SESSION SAVED. Nothing was stored, but you were here.';
       }
     });
@@ -598,8 +638,8 @@
 
   /* ---- registry (order = story order; also the clockwise order on the desktop) ---- */
   const APPS = [
-    { id: 'about', file: 'ABOUT.EXE', icon: 'about', w: 800, h: 640, sys: 'PID 001 / USER', stat: 'PROFILE LOADED', next: 'memory', render: aboutHTML },
-    { id: 'memory', file: 'MEMORY.DAT', icon: 'memory', w: 640, h: 660, sys: 'PID 002 / LOG', stat: '4 CLOSED / 1 PENDING', next: 'skills', render: memoryHTML },
+    { id: 'about', file: 'ABOUT.EXE', icon: 'about', w: 800, h: 640, sys: 'PID 001 / USER', stat: 'PROFILE LOADED', next: 'memory', render: aboutHTML, mount: aboutMount },
+    { id: 'memory', file: 'MEMORY.DAT', icon: 'memory', w: 640, h: 660, sys: 'PID 002 / LOG', stat: '4 CLOSED / 1 PENDING', next: 'skills', render: memoryHTML, mount: memoryMount },
     { id: 'skills', file: 'SKILLS.EXE', icon: 'skills', w: 780, h: 680, sys: 'PID 003 / MODULES', stat: '11 INSTALLED / 4 ACTIVE / 2 EXPLORING / 2 QUEUED', next: 'projects', render: skillsHTML, mount: skillsMount },
     { id: 'projects', file: 'PROJECTS.EXE', icon: 'projects', w: 840, h: 680, sys: 'PID 004 / ARCHIVE', stat: '1 BUILD ARCHIVED', next: 'experience', render: projectsHTML, mount: projectsMount },
     { id: 'experience', file: 'EXPERIENCE.EXE', icon: 'experience', w: 860, h: 700, sys: 'PID 005 / PREVIOUS', stat: 'INSTANCE ARCHIVED', next: 'communication', render: experienceHTML, mount: experienceMount },
@@ -620,6 +660,16 @@
   let zTop = 10, cascade = 0, active = null, startTime = Date.now();
   const layer = () => $('#windows');
 
+  let fullSyncFired = false;
+  function syncUI(n) {
+    const pct = Math.round(n / APPS.length * 100);
+    const arc = $('#syncArc'); if (arc) arc.setAttribute('stroke-dashoffset', String(100 - pct));
+    const t = $('#syncTxt'); if (t) t.textContent = `SYNC ${pad(n)} / ${APPS.length}`;
+    const m = $('#monSync'); if (m) m.textContent = pct + '%';
+    if (window.FX && FX.markLinks) FX.markLinks([...wins.keys()]);
+    if (n >= APPS.length && !fullSyncFired) { fullSyncFired = true; if (window.AOS && AOS.onFullSync) AOS.onFullSync(); }
+  }
+
   function updateTray() {
     wins.forEach(w => {
       w.chip.classList.toggle('is-active', w === active && !w.min);
@@ -627,8 +677,9 @@
       w.chip.setAttribute('aria-pressed', String(w === active && !w.min));
     });
     $$('.icon').forEach(i => i.classList.toggle('is-open', wins.has(i.dataset.app)));
-    const n = opened.size;
-    $('#pathBtn').textContent = n >= APPS.length ? 'Path complete' : `Guided path ${n}/${APPS.length}`;
+    const n = opened.size, short = isMobile();
+    $('#pathBtn').textContent = n >= APPS.length ? (short ? 'Done' : 'Path complete') : (short ? `Path ${n}/${APPS.length}` : `Guided path ${n}/${APPS.length}`);
+    syncUI(n);
     $$('[data-opened]').forEach(el => (el.textContent = `${n} / ${APPS.length}`));
   }
 
@@ -652,6 +703,7 @@
   }
   function minimizeWin(w) {
     if (isMobile()) return closeWin(w);
+    sfx('min');
     w.min = true;
     w.el.classList.add('is-min');
     w.el.inert = true;
@@ -660,6 +712,7 @@
     updateTray();
   }
   function closeWin(w) {
+    sfx('close');
     w.cleanup.forEach(fn => fn());
     wins.delete(w.id);
     w.chip.remove();
@@ -690,7 +743,7 @@
     el.style.setProperty('--w', app.w + 'px');
     el.style.setProperty('--h', app.h + 'px');
     el.innerHTML = `
-      <div class="win__scan" aria-hidden="true"></div>
+      <div class="win__scan" aria-hidden="true"><i class="win__c win__c--tl"></i><i class="win__c win__c--tr"></i><i class="win__c win__c--bl"></i><i class="win__c win__c--br"></i></div>
       <header class="win__head">
         <button class="win__back" type="button" aria-label="Close ${app.file} and return to the desktop">HOME</button>
         <span class="win__title" id="wt-${id}">${svg(app.icon)}<b>${app.file}</b></span>
@@ -731,8 +784,11 @@
 
     layer().appendChild(el);
     wins.set(id, w);
+    const firstTime = !opened.has(id);
     opened.add(id);
     focusWin(w);
+    sfx('open');
+    if (window.AOS && AOS.onOpen) AOS.onOpen(id, firstTime);
     if (app.mount) app.mount(el, w);
 
     // events
@@ -811,6 +867,28 @@
       const b = e.target.closest('.icon'); if (b) openApp(b.dataset.app);
     });
 
+    // sounds + 3D tilt
+    let lastHover = null, lastT = 0;
+    document.addEventListener('pointerover', e => {
+      const el = e.target.closest('button, a, .icon');
+      const now = performance.now();
+      if (el && el !== lastHover && now - lastT > 70 && !el.classList.contains('enter')) { lastHover = el; lastT = now; sfx('hover'); }
+      if (!el) lastHover = null;
+    });
+    document.addEventListener('click', e => {
+      const el = e.target.closest('button, a');
+      if (el && !el.classList.contains('enter') && !el.classList.contains('core') && !el.classList.contains('icon')) sfx('click');
+    });
+    ul.addEventListener('pointermove', e => {
+      const t = e.target.closest('.icon'); if (!t) return;
+      const r = $('.icon__tile', t).getBoundingClientRect();
+      t.style.setProperty('--tx', (-((e.clientY - r.top) / r.height - .5) * 22).toFixed(1) + 'deg');
+      t.style.setProperty('--ty', (((e.clientX - r.left) / r.width - .5) * 22).toFixed(1) + 'deg');
+    });
+    ul.addEventListener('pointerout', e => {
+      const t = e.target.closest('.icon'); if (t) { t.style.setProperty('--tx', '0deg'); t.style.setProperty('--ty', '0deg'); }
+    });
+
     // core ring ticks
     const g = $('#ticks'); let t = '';
     for (let i = 0; i < 120; i++) {
@@ -835,6 +913,8 @@
     core.addEventListener('click', () => {
       ti = (ti + 1) % thoughts.length;
       core.classList.remove('is-ping'); void core.offsetWidth; core.classList.add('is-ping');
+      sfx('ping');
+      if (window.SFX && SFX.state.voice) SFX.speak(thoughts[ti]);
       th.classList.add('is-swap');
       setTimeout(() => { th.textContent = thoughts[ti]; th.classList.remove('is-swap'); }, reduceMotion ? 0 : 300);
     });
@@ -873,7 +953,7 @@
       const targets = $$('[data-glitch]');
       const go = () => {
         const el = targets[Math.floor(Math.random() * targets.length)];
-        if (el) { el.classList.add('is-glitch'); setTimeout(() => el.classList.remove('is-glitch'), 360); }
+        if (el) { el.classList.add('is-glitch'); sfx('glitch'); setTimeout(() => el.classList.remove('is-glitch'), 360); }
         setTimeout(go, 9000 + Math.random() * 8000);
       };
       setTimeout(go, 7000);
@@ -885,7 +965,9 @@
      6. BOOT
      --------------------------------------------------------------- */
   function boot() {
-    const bootEl = $('#boot'), log = $('#bootLog'), status = $('#bootStatus'), btn = $('#enterBtn'), hint = $('#bootHint');
+    const bootEl = $('#boot'), power = $('#power'), inner = $('#bootInner'), reactor = $('#bootReactor');
+    const log = $('#bootLog'), status = $('#bootStatus'), btn = $('#enterBtn'), hint = $('#bootHint');
+    const arc = $('#bootArc'), pct = $('#bootPct');
     const LINES = [
       ['INITIALIZING PERSONALITY', 'OK'],
       ['LOADING MEMORIES', 'OK'],
@@ -896,9 +978,10 @@
     ];
     const timers = [];
     const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
-    let finished = false, i = 0;
+    let finished = false, started = false, i = 0;
 
-    const addLine = ([label, st], instant) => {
+    const setProgress = p => { arc.setAttribute('stroke-dashoffset', String(100 - p)); pct.textContent = Math.round(p) + '%'; };
+    const addLine = ([label, st], idx, instant) => {
       const li = document.createElement('li');
       li.innerHTML = `<span>${label}...</span><i class="dots"></i><b class="st st--wait">····</b>`;
       log.appendChild(li);
@@ -906,47 +989,75 @@
       const resolve = () => {
         stEl.textContent = st;
         stEl.className = 'st ' + (st === 'OK' ? 'st--ok' : 'st--unk');
+        setProgress(((idx + 1) / LINES.length) * 100);
+        if (!instant) sfx(st === 'OK' ? 'ok' : 'unknown');
       };
+      if (!instant) sfx('blip');
       if (instant) resolve(); else later(resolve, st === 'UNKNOWN' ? 620 : 170);
     };
     const finish = () => {
       if (finished) return;
       finished = true;
       status.hidden = false; btn.hidden = false; hint.hidden = true;
+      sfx('ping');
+      if (window.SFX && SFX.state.voice) SFX.speak('System online.');
       btn.focus({ preventScroll: true });
     };
     const step = () => {
       if (i >= LINES.length) { later(finish, reduceMotion ? 0 : 900); return; }
-      addLine(LINES[i++]);
-      later(step, reduceMotion ? 30 : 300);
+      addLine(LINES[i], i); i++;
+      later(step, reduceMotion ? 30 : 320);
     };
     const skip = () => {
-      if (finished) return;
+      if (!started || finished) return;
       timers.forEach(clearTimeout);
       log.innerHTML = '';
-      LINES.forEach(l => addLine(l, true));
+      LINES.forEach((l, idx) => addLine(l, idx, true));
       finish();
     };
-    bootEl.addEventListener('pointerdown', e => { if (!e.target.closest('.enter')) skip(); });
-    addEventListener('keydown', e => { if (!finished && !bootEl.classList.contains('is-leaving')) skip(); });
+    const start = mode => {
+      if (started) return;
+      started = true;
+      if (mode === 'sound' && window.SFX) {
+        SFX.setSound(true); SFX.setVoice(true); SFX.setAmbient(true);
+        SFX.play('power');
+      }
+      power.hidden = true; inner.hidden = false; reactor.hidden = false;
+      later(step, reduceMotion ? 0 : 800);
+    };
+    $('#powerOn').addEventListener('click', () => start('sound'));
+    $('#powerSilent').addEventListener('click', () => start('silent'));
+    $('#powerOn').focus({ preventScroll: true });
+
+    bootEl.addEventListener('pointerdown', e => { if (!e.target.closest('.enter, .ghost')) skip(); });
+    addEventListener('keydown', () => { if (started && !finished && !bootEl.classList.contains('is-leaving')) skip(); });
 
     btn.addEventListener('click', () => {
       const r = btn.getBoundingClientRect();
       bootEl.style.setProperty('--cx', (r.left + r.width / 2) + 'px');
       bootEl.style.setProperty('--cy', (r.top + r.height / 2) + 'px');
       bootEl.classList.add('is-leaving');
+      sfx('enter');
       startTime = Date.now();
-      const d = $('#desktop');
-      d.removeAttribute('inert');
+      $('#desktop').removeAttribute('inert');
       document.body.classList.remove('is-booting');
       document.body.classList.add('is-live');
+      document.dispatchEvent(new Event('aos:live'));
       setTimeout(() => { bootEl.classList.add('is-gone'); }, reduceMotion ? 0 : 950);
-      // first file: the user profile (desktop only; mobile starts on the home screen)
-      if (!isMobile()) setTimeout(() => openApp('about'), reduceMotion ? 0 : 650);
+      // the assistant greets the visitor; without it, fall back to opening the profile
+      setTimeout(() => {
+        if (window.AOS && AOS.greet) AOS.greet();
+        else if (!isMobile()) openApp('about');
+      }, reduceMotion ? 0 : 1100);
     });
-
-    step();
   }
+
+  /* expose a small API for fx.js and assistant.js */
+  window.AOS = {
+    APPS, BY_ID, openApp, closeWin, wins, opened, toast, isMobile,
+    closeAll: () => Array.from(wins.values()).forEach(closeWin),
+    get active() { return active; }
+  };
 
   buildDesktop();
   boot();
