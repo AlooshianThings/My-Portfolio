@@ -12,11 +12,11 @@
      instead of a dead link.
      --------------------------------------------------------------- */
   const CONFIG = {
-    email: '',      // e.g. 'ayushi@example.com'
-    github: '',     // e.g. 'https://github.com/your-username'
-    linkedin: '',   // e.g. 'https://www.linkedin.com/in/your-handle'
+    email: 'yaship790@gmail.com',      // e.g. 'ayushi@example.com'
+    github: 'https://github.com/AlooshianThings',     // e.g. 'https://github.com/your-username'
+    linkedin: 'https://www.linkedin.com/in/alooshian-things/',   // e.g. 'https://www.linkedin.com/in/your-handle'
     repos: {
-      aaa: ''       // optional: link to the AAA Travels repository
+      aaa: 'https://aaa-travels.onrender.com'       // optional: link to the AAA Travels repository
     }
   };
 
