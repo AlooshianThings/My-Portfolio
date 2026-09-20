@@ -16,7 +16,7 @@
     github: 'https://github.com/AlooshianThings',
     linkedin: 'https://www.linkedin.com/in/alooshian-things/',
     repos: {
-      aaa: 'https://github.com/AlooshianThings/AAA-Travels-Direct-Uploads.git'
+      aaa: 'https://aaa-travels.onrender.com'
     }
   };
 
@@ -210,7 +210,7 @@
       <div><dt>TYPE</dt><dd>FULL-STACK WEB APPLICATION</dd></div>
       <div><dt>TECH STACK</dt><dd class="tags"><span class="tag">Python</span><span class="tag">Django</span><span class="tag">SQL</span><span class="tag">JavaScript</span><span class="tag">HTML</span><span class="tag">CSS</span></dd></div>
     </dl>
-    ${CONFIG.repos.aaa ? `<a class="link-btn" href="${CONFIG.repos.aaa}" target="_blank" rel="noopener noreferrer">OPEN REPOSITORY</a>` : ''}`;
+    ${CONFIG.repos.aaa ? `<a class="link-btn" href="${CONFIG.repos.aaa}" target="_blank" rel="noopener noreferrer">LAUNCH</a>` : ''}`;
 
   const modulesPanel = () => `
     <div class="layers">
