@@ -77,7 +77,7 @@
     ['about', 'This is Ayushi: a technologist in the middle of a system reconfiguration. Builder, communicator, coordinator.'],
     ['memory', 'Her history, written as a system log. Notice the last entry. Cybersecurity is still loading.'],
     ['skills', 'Installed modules, active practices, and what she is exploring now. No percentages, on purpose. Try dragging the constellation.'],
-    ['projects', 'AAA Travels: a full-stack booking platform built with Django. You can run a seat-selection simulation in here.'],
+    ['projects', 'Her builds: AAA Travels, Streakster, AAA News and Alooshstick, her very first website. Each has a small simulation you can try.'],
     ['experience', 'A previous instance. Dubbing project manager, on multilingual productions for Netflix, Crunchyroll and NBCUniversal.'],
     ['communication', 'The shared library. Turning ideas into explanations, and chaos into plans.'],
     ['quest', 'Where she is headed. The map is unfinished on purpose.'],
@@ -135,7 +135,7 @@
     about: 'Profile loaded. That is her.',
     memory: 'Reading the log. Note the last entry.',
     skills: 'Modules indexed. The constellation is draggable.',
-    projects: 'Archive open. Try the seat simulation.',
+    projects: 'Archive open. Each build has a simulation to try.',
     experience: 'Previous instance restored.',
     communication: 'Shared library loaded.',
     quest: 'Live map. It is unfinished.',
@@ -245,7 +245,7 @@
     about: 'about', profile: 'about', user: 'about', me: 'about', ayushi: 'about',
     memory: 'memory', memories: 'memory', log: 'memory', timeline: 'memory', history: 'memory',
     skills: 'skills', skill: 'skills', modules: 'skills', tech: 'skills', stack: 'skills',
-    projects: 'projects', project: 'projects', archive: 'projects', builds: 'projects', travels: 'projects', aaa: 'projects',
+    projects: 'projects', project: 'projects', archive: 'projects', builds: 'projects', travels: 'projects', aaa: 'projects', alooshstick: 'projects', lipstick: 'projects', streakster: 'projects', streak: 'projects', habit: 'projects', news: 'projects',
     experience: 'experience', work: 'experience', job: 'experience', dubbing: 'experience',
     communication: 'communication', comm: 'communication', hosting: 'communication',
     quest: 'quest', goal: 'quest', future: 'quest',
@@ -276,6 +276,9 @@
     [/tour|guide me|show me around|walk ?through|demo|begin|^start$/, () => ({ text: 'Starting the guided tour.', action: startTour })],
     [/^(open|show|launch|go to|take me to)\s+(.+)/, (m) => {
       const words = m[2].replace(/[^a-z ]/g, ' ').split(/\s+/);
+      const proj = { alooshstick: 'aloosh', lipstick: 'aloosh', streakster: 'streakster', streak: 'streakster', habit: 'streakster', news: 'news', aaa: 'aaa', travels: 'aaa' };
+      const pj = words.map(w => proj[w]).find(Boolean);
+      if (pj) return { text: `Opening ${AOS.PROJECTS.find(x => x.id === pj).name}.`, close: true, action: () => AOS.selectProject(pj) };
       const id = words.map(w => ALIAS[w]).find(Boolean);
       return id ? { text: `Opening ${AOS.BY_ID[id].file}.`, ...go(id) } : { text: 'I cannot find that file. Try about, memory, skills, projects, experience, quest or contact.' };
     }],
@@ -284,7 +287,11 @@
     [/(contact|hire|email|reach|linkedin|github|connect|collaborat|available|opportunit|work with)/, () => ({ text: 'The save point has her email, GitHub and LinkedIn. I cannot speak for her calendar, but that is the place to start.', ...go('save') })],
     [/(host|anchor|speak|communicat|script|team|event|ieee|coordinat|lead)/, () => ({ text: 'Event hosting, anchoring, script writing and team coordination, including IEEE and college activities. She turns ideas into explanations and chaos into plans.', ...go('communication') })],
     [/(experience|dubbing|netflix|crunchyroll|nbc|universal|manager|professional|career|job|work)/, () => ({ text: 'She worked as a dubbing project manager on multilingual productions, including projects for Netflix, Crunchyroll and NBCUniversal. Opening the archived instance.', ...go('experience') })],
-    [/(project|build|built|make|made|create|portfolio|travel|aaa|booking|django app)/, () => ({ text: 'Her main archived build is AAA Travels: a full-stack travel booking app with Django, SQL and JavaScript. There is a seat-selection simulation inside.', ...go('projects') })],
+    [/(aloosh|lipstick|first (ever )?(website|site|build))/, () => ({ text: 'Alooshstick is a basic lipstick shopping website, and the very first site she ever built. It is deployed. Opening it, with a small shopping simulation.', close: true, action: () => AOS.selectProject('aloosh') })],
+    [/(streakster|streak|habit)/, () => ({ text: 'Streakster is her simple habit-building site, powered by streaks. It is deployed. Opening it, with a simulation you can try.', close: true, action: () => AOS.selectProject('streakster') })],
+    [/(aaa news|college news|\bnews\b)/, () => ({ text: 'AAA News is the news website of her college, and it is deployed. Opening it, with a browse and read simulation.', close: true, action: () => AOS.selectProject('news') })],
+    [/(aaa travels|travels|booking|seat)/, () => ({ text: 'AAA Travels is her full-stack travel booking app with Django, SQL and JavaScript. Opening it, with a seat-selection simulation.', close: true, action: () => AOS.selectProject('aaa') })],
+    [/(project|build|built|make|made|create|portfolio|deployed|django app)/, () => ({ text: 'She has four builds indexed: AAA Travels, a full-stack booking app; Streakster, a habit tracker built on streaks; AAA News, her college news site; and Alooshstick, her very first website. Each has a simulation.', ...go('projects') })],
     [/(skill|tech|stack|know|language|python|java|sql|django|javascript|module|tool|code|coding)/, () => ({ text: 'Installed modules include Python, Java, JavaScript, SQL, PL/SQL, HTML, CSS, jQuery, Node.js, Django and MySQL, with Git, APIs and database work in regular use.', ...go('skills') })],
     [/(memory|memories|timeline|history|story|past|journey|background|education|study|degree|bca|mca)/, () => ({ text: 'Here is her history as a system log: BCA in 2022, professional mode in 2025, reconfiguration in 2026. The last entry is still loading.', ...go('memory') })],
     [/(bug|weakness|flaw|fault|imperfect|overthink|perfection)/, () => ({ text: 'She documented her own bugs: too many ideas, occasional perfectionism, overthinking and tabs that multiply. All self-reported.', ...go('bugs') })],

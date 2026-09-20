@@ -15,9 +15,9 @@
     email: 'yaship790@gmail.com',      // e.g. 'ayushi@example.com'
     github: 'https://github.com/AlooshianThings',     // e.g. 'https://github.com/your-username'
     linkedin: 'https://www.linkedin.com/in/alooshian-things/',   // e.g. 'https://www.linkedin.com/in/your-handle'
-    repos: {
-      aaa: 'https://aaa-travels.onrender.com'       // optional: link to the AAA Travels repository
-    }
+    // Optional project links, keyed by the project `id` in PROJECTS. Empty = button hidden.
+    live: { aaa: 'https://aaa-travels.onrender.com', streakster: 'https://streakster-theta.vercel.app/', news: 'https://aaa-news-omega.vercel.app/', aloosh: 'https://aaa-news.vercel.app/' },   // e.g. 'https://streakster.vercel.app'
+    repos: { aaa: 'https://github.com/AlooshianThings/AAA-Travels.git', streakster: 'https://github.com/AlooshianThings/Streakster.git', news: 'https://github.com/AlooshianThings/AAA-News.git', aloosh: 'https://github.com/AlooshianThings/Alooshstick.git' }   // e.g. 'https://github.com/you/streakster'
   };
 
   /* ---------------------------------------------------------------
@@ -208,7 +208,111 @@
     }
   };
 
-  /* ---- PROJECTS ---- */
+  /* ---- PROJECTS ----
+     Data-driven. To add a build, push ONE object onto PROJECTS below and (optionally)
+     name a simulation in `sim`. Simulations live in SIMS further down; a build with
+     `sim: null` simply shows no SIMULATE tab. The list, labels (ARCHIVE_00N), the
+     "empty slot" and the window footer count all update automatically.
+
+     Links: fill CONFIG.repos / CONFIG.live at the top of this file, keyed by `id`. */
+  const PROJECTS = [
+    {
+      id: 'aaa', name: 'AAA_TRAVELS', tag: 'BUILD ARCHIVED',
+      status: 'COMPLETED / BUILD ARCHIVED', type: 'FULL-STACK WEB APPLICATION',
+      stack: ['Python', 'Django', 'SQL', 'JavaScript', 'HTML', 'CSS'],
+      lead: 'A travel-booking web application. Pick a bus, a train or a hotel package, choose a seat, enter passenger details, pay, and leave with a confirmed booking ID.',
+      layers: [
+        ['FLOWS', 'Bus booking, train booking, hotel / package flow, payment flow, booking confirmation, booking IDs.'],
+        ['FRONT END', 'Seat selection, passenger information with dynamic passenger forms. Built in HTML, CSS and JavaScript.'],
+        ['BACK END', 'Django backend with APIs connecting the flows.'],
+        ['DATA', 'SQL and database work behind bookings and passengers.']
+      ],
+      sim: 'seats'
+    },
+    {
+      id: 'streakster', name: 'STREAKSTER', tag: 'DEPLOYED',
+      status: 'DEPLOYED / LIVE', type: 'WEB APPLICATION / HABIT TRACKER',
+      stack: ['JavaScript', 'HTML', 'CSS'],
+      lead: 'Simple habit building, powered by streaks. Pick a habit, check in each day, and let the streak do the motivating.',
+      layers: [
+        ['CORE LOOP', 'Add a habit, check in daily, watch the streak grow. Miss a day and the streak starts over.'],
+        ['FRONT END', 'A deliberately simple interface: the habit, the streak count, one button.'],
+        ['DEPLOYMENT', 'Deployed and live on the web.']
+      ],
+      sim: 'streak'
+    },
+    {
+      id: 'news', name: 'AAA_NEWS', tag: 'DEPLOYED',
+      status: 'DEPLOYED / LIVE', type: 'WEBSITE / COLLEGE NEWS',
+      stack: ['JavaScript', 'HTML', 'CSS'],
+      lead: 'The news website of her college. A place to find what is happening on campus and read it properly.',
+      layers: [
+        ['FLOWS', 'Browse the latest stories, search, open an article and read.'],
+        ['FRONT END', 'A readable, responsive layout built for a real audience: students.'],
+        ['DEPLOYMENT', 'Deployed and live on the web.']
+      ],
+      sim: 'news'
+    }
+    ,
+    {
+      id: 'aloosh', name: 'ALOOSHSTICK', tag: 'FIRST BUILD',
+      status: 'DEPLOYED / FIRST BUILD', type: 'WEBSITE / BASIC SHOPPING SITE',
+      stack: ['HTML', 'CSS'],
+      lead: 'Her very first website, and the most basic of them all: a simple lipstick shopping site. Every system has a first line of code. This is the boot sector.',
+      layers: [
+        ['ORIGIN', 'The first build. Where the habit of making things and putting them online began.'],
+        ['FLOWS', 'Browse the lipsticks, add what you like to the cart, review the cart.'],
+        ['FRONT END', 'Page structure and styling. Simple on purpose, because simple is where it started.'],
+        ['DEPLOYMENT', 'Deployed and live on the web.']
+      ],
+      sim: 'shop'
+    }
+    /* next build: copy one object above, change id / name / text, set sim: null or a key from SIMS. */
+  ];
+
+  const arcLabel = i => 'ARCHIVE_' + String(i + 1).padStart(3, '0');
+  const projectsHTML = () => `
+  <div class="arch">
+    <div class="arch__list" role="group" aria-label="Archived builds">
+      ${PROJECTS.map((p, i) => `<button type="button" class="arch__item" data-arch="${p.id}" aria-pressed="${i === 0}"><span class="lbl">${arcLabel(i)}</span><b>${p.name}</b><small>${p.tag}</small></button>`).join('')}
+      <button type="button" class="arch__item arch__item--empty" data-arch="__empty" aria-pressed="false"><span class="lbl">${arcLabel(PROJECTS.length)}</span><b>[ EMPTY SLOT ]</b><small>NEXT BUILD</small></button>
+    </div>
+    <div class="arch__view" id="archView"></div>
+  </div>`;
+
+  const archHead = (p, i) => `
+    <p class="lbl">${arcLabel(i)}</p>
+    <h2 class="h">${p.name}</h2>
+    <div class="btabs" role="tablist" aria-label="Inspect build">
+      <button class="btab" role="tab" data-tab="spec" aria-selected="true">SPEC</button>
+      <button class="btab" role="tab" data-tab="modules" aria-selected="false">MODULES</button>
+      ${p.sim ? '<button class="btab" role="tab" data-tab="sim" aria-selected="false">SIMULATE</button>' : ''}
+    </div>
+    <div id="archPanel" role="tabpanel"></div>`;
+
+  const linkRow = p => {
+    // accept links pasted without "https://" and make sure they open as absolute URLs
+    const fix = u => (u && !/^https?:\/\//i.test(u.trim())) ? 'https://' + u.trim() : (u || '').trim();
+    const live = fix(CONFIG.live && CONFIG.live[p.id]), repo = fix(CONFIG.repos && CONFIG.repos[p.id]);
+    return `<div class="links-row">${live
+      ? `<a class="link-btn" href="${live}" target="_blank" rel="noopener noreferrer">OPEN LIVE SITE</a>`
+      : `<button type="button" class="link-btn is-unset" data-unset-live="${p.name}">OPEN LIVE SITE</button>`}${repo ? `<a class="link-btn" href="${repo}" target="_blank" rel="noopener noreferrer">OPEN REPOSITORY</a>` : ''}</div>`;
+  };
+  const specPanel = p => `
+    <p class="arch__lead">${p.lead}</p>
+    <dl class="dl-rows">
+      <div><dt>STATUS</dt><dd>${p.status}</dd></div>
+      <div><dt>TYPE</dt><dd>${p.type}</dd></div>
+      <div><dt>TECH STACK</dt><dd class="tags">${p.stack.map(t => `<span class="tag">${t}</span>`).join('')}</dd></div>
+    </dl>
+    ${linkRow(p)}`;
+  const modulesPanel = p => `<div class="layers">${p.layers.map(([k, v]) => `<div class="layer"><b>${k}</b><span>${v}</span></div>`).join('')}</div>`;
+
+  /* ---------- simulations ---------- */
+  const simNote = t => `<p class="note" style="margin-bottom:14px">SIMULATION. ${t} Nothing is stored or sent anywhere.</p>`;
+  const setSteps = (steps, stage) => steps.forEach((li, i) => { li.classList.toggle('is-done', i < stage); li.classList.toggle('is-now', i === stage); });
+
+  /* --- AAA Travels: seat map + dynamic passenger forms --- */
   const OCC = new Set(['1B', '2D', '3C', '4A', '4B', '6D']);
   const seatMarkup = () => {
     let rows = '';
@@ -223,44 +327,9 @@
     }
     return rows;
   };
-  const projectsHTML = () => `
-  <div class="arch">
-    <div class="arch__list" role="group" aria-label="Archived builds">
-      <button type="button" class="arch__item" data-arch="001" aria-pressed="true"><span class="lbl">ARCHIVE_001</span><b>AAA_TRAVELS</b><small>BUILD ARCHIVED</small></button>
-      <button type="button" class="arch__item arch__item--empty" data-arch="002" aria-pressed="false"><span class="lbl">ARCHIVE_002</span><b>[ EMPTY SLOT ]</b><small>NEXT BUILD</small></button>
-    </div>
-    <div class="arch__view" id="archView"></div>
-  </div>`;
-
-  const archSpec = () => `
-    <p class="lbl">ARCHIVE_001</p>
-    <h2 class="h">AAA_TRAVELS</h2>
-    <div class="btabs" role="tablist" aria-label="Inspect build">
-      <button class="btab" role="tab" data-tab="spec" aria-selected="true">SPEC</button>
-      <button class="btab" role="tab" data-tab="modules" aria-selected="false">MODULES</button>
-      <button class="btab" role="tab" data-tab="sim" aria-selected="false">SIMULATE</button>
-    </div>
-    <div id="archPanel" role="tabpanel"></div>`;
-
-  const specPanel = () => `
-    <p class="arch__lead">A travel-booking web application. Pick a bus, a train or a hotel package, choose a seat, enter passenger details, pay, and leave with a confirmed booking ID.</p>
-    <dl class="dl-rows">
-      <div><dt>STATUS</dt><dd>COMPLETED / BUILD ARCHIVED</dd></div>
-      <div><dt>TYPE</dt><dd>FULL-STACK WEB APPLICATION</dd></div>
-      <div><dt>TECH STACK</dt><dd class="tags"><span class="tag">Python</span><span class="tag">Django</span><span class="tag">SQL</span><span class="tag">JavaScript</span><span class="tag">HTML</span><span class="tag">CSS</span></dd></div>
-    </dl>
-    ${CONFIG.repos.aaa ? `<a class="link-btn" href="${CONFIG.repos.aaa}" target="_blank" rel="noopener noreferrer">OPEN REPOSITORY</a>` : ''}`;
-
-  const modulesPanel = () => `
-    <div class="layers">
-      <div class="layer"><b>FLOWS</b><span>Bus booking, train booking, hotel / package flow, payment flow, booking confirmation, booking IDs.</span></div>
-      <div class="layer"><b>FRONT END</b><span>Seat selection, passenger information with dynamic passenger forms. Built in HTML, CSS and JavaScript.</span></div>
-      <div class="layer"><b>BACK END</b><span>Django backend with APIs connecting the flows.</span></div>
-      <div class="layer"><b>DATA</b><span>SQL and database work behind bookings and passengers.</span></div>
-    </div>`;
-
-  const simPanel = () => `
-    <p class="note" style="margin-bottom:14px">SIMULATION. A small behaviour model of the seat and passenger flow, not the live app. Nothing is sent anywhere.</p>
+  const seatsSim = {
+    html: () => `
+    ${simNote('A behaviour model of the seat and passenger flow, not the live app.')}
     <ol class="steps" aria-label="Booking steps">
       <li class="is-now">SEAT</li><li>PASSENGERS</li><li>PAYMENT</li><li>CONFIRMED</li>
     </ol>
@@ -278,80 +347,270 @@
         </div>
         <output class="result" hidden></output>
       </div>
-    </div>`;
+    </div>`,
+    mount(root) {
+      const grid = $('.bus', root), pax = $('.pax', root), out = $('.result', root);
+      const steps = $$('.steps li', root), confirmBtn = $('[data-confirm]', root), resetBtn = $('[data-reset]', root);
+      const emptyMsg = '<p class="pax__empty">Select a seat. A form appears for each one.</p>';
+      let chosen = [], done = false;
+      const paint = () => {
+        setSteps(steps, done ? 4 : chosen.length ? 1 : 0);
+        confirmBtn.disabled = done || !chosen.length;
+        if (!chosen.length && !done) pax.innerHTML = emptyMsg;
+      };
+      grid.addEventListener('click', e => {
+        const b = e.target.closest('.seat');
+        if (!b || b.disabled || done) return;
+        const id = b.dataset.seat, i = chosen.indexOf(id);
+        sfx('click');
+        if (i > -1) {
+          chosen.splice(i, 1);
+          b.classList.remove('is-sel'); b.setAttribute('aria-pressed', 'false');
+          const row = pax.querySelector(`[data-for="${id}"]`); if (row) row.remove();
+        } else {
+          if (chosen.length >= 4) { toast('This model allows up to 4 seats per booking.'); return; }
+          if (!chosen.length) pax.innerHTML = '';
+          chosen.push(id);
+          b.classList.add('is-sel'); b.setAttribute('aria-pressed', 'true');
+          const row = document.createElement('label');
+          row.className = 'paxrow'; row.dataset.for = id;
+          row.innerHTML = `<span>SEAT ${id}</span><input type="text" placeholder="Passenger name" autocomplete="off" aria-label="Passenger name for seat ${id}">`;
+          pax.appendChild(row);
+        }
+        paint();
+      });
+      confirmBtn.addEventListener('click', () => {
+        if (!chosen.length) return;
+        done = true; sfx('unlock');
+        $$('input', pax).forEach(i => (i.disabled = true));
+        const id = 'SIM-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+        out.hidden = false;
+        out.textContent = `CONFIRMED. Sample booking ID: ${id}. Seats: ${chosen.join(', ')}. Nothing was booked; this is a model of the flow.`;
+        paint();
+      });
+      resetBtn.addEventListener('click', () => {
+        chosen = []; done = false; out.hidden = true;
+        $$('.seat', grid).forEach(b => { b.classList.remove('is-sel'); if (!b.classList.contains('is-occ')) b.setAttribute('aria-pressed', 'false'); });
+        pax.innerHTML = emptyMsg; paint();
+      });
+      paint();
+    }
+  };
 
-  function mountSim(root) {
-    const grid = $('.bus', root), pax = $('.pax', root), out = $('.result', root);
-    const steps = $$('.steps li', root), confirmBtn = $('[data-confirm]', root), resetBtn = $('[data-reset]', root);
-    const emptyMsg = '<p class="pax__empty">Select a seat. A form appears for each one.</p>';
-    let chosen = [], done = false;
-
-    const paint = () => {
-      const stage = done ? 4 : chosen.length ? 1 : 0;
-      steps.forEach((li, i) => { li.classList.toggle('is-done', i < stage); li.classList.toggle('is-now', i === stage); });
-      confirmBtn.disabled = done || !chosen.length;
-      if (!chosen.length && !done) pax.innerHTML = emptyMsg;
-    };
-    grid.addEventListener('click', e => {
-      const b = e.target.closest('.seat');
-      if (!b || b.disabled || done) return;
-      const id = b.dataset.seat, i = chosen.indexOf(id);
-      sfx('click');
-      if (i > -1) {
-        chosen.splice(i, 1);
-        b.classList.remove('is-sel'); b.setAttribute('aria-pressed', 'false');
-        const row = pax.querySelector(`[data-for="${id}"]`); if (row) row.remove();
-      } else {
-        if (chosen.length >= 4) { toast('This model allows up to 4 seats per booking.'); return; }
-        if (!chosen.length) pax.innerHTML = '';
-        chosen.push(id);
-        b.classList.add('is-sel'); b.setAttribute('aria-pressed', 'true');
-        const row = document.createElement('label');
-        row.className = 'paxrow'; row.dataset.for = id;
-        row.innerHTML = `<span>SEAT ${id}</span><input type="text" placeholder="Passenger name" autocomplete="off" aria-label="Passenger name for seat ${id}">`;
-        pax.appendChild(row);
+  /* --- STREAKSTER: habits, daily check-in, streak, missed-day reset --- */
+  const streakSim = {
+    html: () => `
+    ${simNote('A behaviour model of streak tracking (a missed day resets the streak), not the live app.')}
+    <ol class="steps" aria-label="Streak steps">
+      <li class="is-now">ADD HABIT</li><li>CHECK IN</li><li>STREAK GROWS</li><li>MISS A DAY</li>
+    </ol>
+    <div class="streak__add">
+      <input type="text" class="streak__input" maxlength="36" placeholder="A new habit, e.g. read for 20 minutes" aria-label="New habit name">
+      <button type="button" class="btn btn--solid" data-add>ADD HABIT</button>
+    </div>
+    <ul class="habits" aria-live="polite"></ul>
+    <div class="sim__actions">
+      <button type="button" class="btn" data-next>SIMULATE NEXT DAY</button>
+      <button type="button" class="btn" data-reset>RESET</button>
+    </div>
+    <p class="note streak__day" style="margin-top:12px"></p>`,
+    mount(root) {
+      const list = $('.habits', root), input = $('.streak__input', root), dayEl = $('.streak__day', root);
+      const steps = $$('.steps li', root);
+      const SEED = 'Read for 20 minutes';
+      let day, habits, everMissed;
+      const fresh = () => { day = 1; everMissed = false; habits = [{ name: SEED, hist: [], today: false, streak: 0, best: 0 }]; };
+      const paint = () => {
+        list.innerHTML = '';
+        habits.forEach((h, idx) => {
+          const li = document.createElement('li'); li.className = 'habit';
+          const main = document.createElement('div'); main.className = 'habit__main';
+          const nm = document.createElement('b'); nm.textContent = h.name;
+          const n = document.createElement('span'); n.className = 'habit__n'; n.textContent = h.streak;
+          const meta = document.createElement('span'); meta.className = 'habit__meta'; meta.textContent = `day streak   BEST ${h.best}`;
+          main.append(nm, n, meta);
+          const strip = document.createElement('div'); strip.className = 'habit__strip'; strip.setAttribute('aria-hidden', 'true');
+          const hist = h.hist.slice(-13);
+          for (let k = 0; k < 13 - hist.length; k++) strip.appendChild(document.createElement('i'));
+          hist.forEach(v => { const s = document.createElement('i'); s.className = v ? 'is-done' : 'is-miss'; strip.appendChild(s); });
+          const t = document.createElement('i'); t.className = h.today ? 'is-done is-today' : 'is-today'; strip.appendChild(t);
+          const chk = document.createElement('button'); chk.type = 'button'; chk.className = 'btn' + (h.today ? '' : ' btn--solid');
+          chk.textContent = h.today ? 'CHECKED IN' : 'CHECK IN'; chk.disabled = h.today; chk.dataset.check = idx;
+          const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'habit__x'; rm.dataset.rm = idx; rm.setAttribute('aria-label', `Remove ${h.name}`); rm.innerHTML = '<i></i>';
+          li.append(main, strip, chk, rm); list.appendChild(li);
+        });
+        if (!habits.length) list.innerHTML = '<li class="pax__empty">No habits yet. Add one above.</li>';
+        const grown = habits.some(h => h.streak > 0);
+        setSteps(steps, !habits.length ? 0 : everMissed ? 4 : grown ? 2 : 1);
+        if (everMissed) steps[3].classList.add('is-now');
+        dayEl.textContent = `SIMULATED DAY ${day}`;
+      };
+      $('[data-add]', root).addEventListener('click', add);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
+      function add() {
+        const v = input.value.trim(); if (!v) return;
+        if (habits.length >= 4) { toast('This model holds up to 4 habits.'); return; }
+        habits.push({ name: v, hist: [], today: false, streak: 0, best: 0 }); input.value = ''; sfx('ok'); paint();
       }
+      list.addEventListener('click', e => {
+        const c = e.target.closest('[data-check]'), r = e.target.closest('[data-rm]');
+        if (c) {
+          const h = habits[+c.dataset.check]; if (h.today) return;
+          h.today = true; h.streak++; h.best = Math.max(h.best, h.streak); sfx('ok');
+          if (h.streak === 7) { sfx('unlock'); toast(`7-day streak on "${h.name}". (Modeled milestone.)`); }
+          paint();
+        } else if (r) { habits.splice(+r.dataset.rm, 1); sfx('close'); paint(); }
+      });
+      $('[data-next]', root).addEventListener('click', () => {
+        habits.forEach(h => {
+          h.hist.push(h.today);
+          if (!h.today) { if (h.streak > 0) everMissed = true; h.streak = 0; }
+          h.today = false;
+        });
+        day++; sfx('tick'); paint();
+      });
+      $('[data-reset]', root).addEventListener('click', () => { fresh(); paint(); });
+      fresh(); paint();
+    }
+  };
+
+  /* --- AAA News: browse, search, read (SAMPLE stories, not real news) --- */
+  const NEWS = [
+    { t: 'Sample: Annual fest registrations are now open', k: 'EVENTS', b: 'Sample article text. This story is placeholder content used to show how reading works in the simulation.' },
+    { t: 'Sample: Library extends hours during exam week', k: 'CAMPUS', b: 'Sample article text. In the real site, an article page like this would carry the full story, laid out for easy reading.' },
+    { t: 'Sample: Coding club announces a beginner workshop', k: 'CLUBS', b: 'Sample article text. Placeholder content only: search for a keyword like workshop or library to see the list narrow.' },
+    { t: 'Sample: Department seminar on emerging technology', k: 'ACADEMICS', b: 'Sample article text. Nothing here is real news; it exists so the browse, search and read flow can be tried.' },
+    { t: 'Sample: Sports day results and highlights', k: 'SPORTS', b: 'Sample article text. Imagine highlights, scores and photos here. This is only a behaviour model of the reading experience.' }
+  ];
+  const newsSim = {
+    html: () => `
+    ${simNote('A behaviour model of browsing, searching and reading. The stories are SAMPLE placeholders, not real news.')}
+    <ol class="steps" aria-label="Reading steps"><li class="is-now">BROWSE</li><li>SEARCH</li><li>READ</li></ol>
+    <div class="news">
+      <div class="news__side">
+        <input type="search" class="news__q" placeholder="Search stories (try: workshop)" aria-label="Search sample stories">
+        <ul class="news__list" aria-live="polite"></ul>
+      </div>
+      <article class="news__read" aria-live="polite"><p class="pax__empty">Select a headline to read it here.</p></article>
+    </div>`,
+    mount(root) {
+      const q = $('.news__q', root), list = $('.news__list', root), read = $('.news__read', root), steps = $$('.steps li', root);
+      let opened = -1;
+      const paint = () => {
+        const term = q.value.trim().toLowerCase();
+        list.innerHTML = '';
+        const hits = NEWS.map((s, i) => [s, i]).filter(([s]) => !term || (s.t + ' ' + s.b + ' ' + s.k).toLowerCase().includes(term));
+        hits.forEach(([s, i]) => {
+          const li = document.createElement('li'), b = document.createElement('button');
+          b.type = 'button'; b.className = 'news__item'; b.dataset.i = i; b.setAttribute('aria-pressed', String(i === opened));
+          const k = document.createElement('span'); k.className = 'lbl'; k.textContent = s.k;
+          const t = document.createElement('b'); t.textContent = s.t;
+          b.append(k, t); li.appendChild(b); list.appendChild(li);
+        });
+        if (!hits.length) list.innerHTML = '<li class="pax__empty">No sample stories match that search.</li>';
+        setSteps(steps, opened > -1 ? 2 : term ? 1 : 0);
+      };
+      q.addEventListener('input', paint);
+      list.addEventListener('click', e => {
+        const b = e.target.closest('.news__item'); if (!b) return;
+        opened = +b.dataset.i; sfx('click');
+        const s = NEWS[opened];
+        read.innerHTML = '';
+        const k = document.createElement('p'); k.className = 'lbl'; k.textContent = s.k + ' / SAMPLE';
+        const h = document.createElement('h3'); h.className = 'h'; h.textContent = s.t;
+        const p = document.createElement('p'); p.className = 'news__body'; p.textContent = s.b;
+        read.append(k, h, p); paint();
+      });
       paint();
-    });
-    confirmBtn.addEventListener('click', () => {
-      if (!chosen.length) return;
-      done = true; sfx('unlock');
-      $$('input', pax).forEach(i => (i.disabled = true));
-      const id = 'SIM-' + Math.random().toString(36).slice(2, 8).toUpperCase();
-      out.hidden = false;
-      out.textContent = `CONFIRMED. Sample booking ID: ${id}. Seats: ${chosen.join(', ')}. Nothing was booked; this is a model of the flow.`;
+    }
+  };
+  /* --- ALOOSHSTICK: a basic shopping flow (browse, add to cart, cart total, order) --- */
+  const LIPSTICKS = [['Rose', 249, '#C9607F'], ['Berry', 299, '#8E2F5B'], ['Coral', 199, '#E5745F'], ['Nude', 229, '#C99A86'], ['Plum', 329, '#5E2A55'], ['Red', 279, '#B3243A']];
+  const tube = c => `<svg class="tube" viewBox="0 0 40 64" aria-hidden="true"><path d="M13 30V14c0-6 4-10 7-10s7 4 7 10v16z" fill="${c}"/><path d="M13 14c2 3 12 3 14 0" fill="none" stroke="rgba(255,255,255,.5)"/><rect x="10" y="30" width="20" height="8" rx="1.5" fill="#CDBFEF" stroke="#6B5A9B"/><rect x="8" y="38" width="24" height="22" rx="3" fill="#3A2E66"/></svg>`;
+  const shopSim = {
+    html: () => `
+    ${simNote('A behaviour model of a basic shopping flow. The lipsticks and prices are SAMPLES, not the real products.')}
+    <ol class="steps" aria-label="Shopping steps"><li class="is-now">BROWSE</li><li>ADD TO CART</li><li>CHECKOUT</li><li>ORDER PLACED</li></ol>
+    <div class="shop">
+      <ul class="shop__grid" aria-label="Sample lipsticks">
+        ${LIPSTICKS.map(([n, pr, c]) => `<li class="prod">${tube(c)}<b>${n}</b><span class="prod__p">Rs ${pr}</span><button type="button" class="btn" data-add="${n}" aria-label="Add ${n} to cart">ADD</button></li>`).join('')}
+      </ul>
+      <aside class="cart" aria-label="Cart">
+        <p class="lbl">CART</p>
+        <ul class="cart__list" aria-live="polite"></ul>
+        <p class="cart__total"><span>TOTAL</span><b>Rs 0</b></p>
+        <div class="sim__actions">
+          <button type="button" class="btn btn--solid" data-order disabled>PLACE ORDER</button>
+          <button type="button" class="btn" data-clear>CLEAR</button>
+        </div>
+        <output class="result" hidden></output>
+      </aside>
+    </div>`,
+    mount(root) {
+      const list = $('.cart__list', root), totalEl = $('.cart__total b', root), out = $('.result', root);
+      const orderBtn = $('[data-order]', root), steps = $$('.steps li', root);
+      const price = Object.fromEntries(LIPSTICKS.map(([n, p]) => [n, p]));
+      let cart = {}, ordered = false;
+      const paint = () => {
+        const names = Object.keys(cart);
+        list.innerHTML = names.length ? '' : '<li class="pax__empty">Your cart is empty.</li>';
+        let total = 0;
+        names.forEach(n => {
+          const q = cart[n], line = q * price[n]; total += line;
+          const li = document.createElement('li'); li.className = 'cart__row';
+          li.innerHTML = `<span>${n}</span><span class="cart__q"><button type="button" class="qbtn" data-dec="${n}" aria-label="Fewer ${n}"${ordered ? ' disabled' : ''}>-</button><b>${q}</b><button type="button" class="qbtn" data-inc="${n}" aria-label="More ${n}"${ordered ? ' disabled' : ''}>+</button></span><span>Rs ${line}</span>`;
+          list.appendChild(li);
+        });
+        totalEl.textContent = 'Rs ' + total;
+        orderBtn.disabled = ordered || !names.length;
+        setSteps(steps, ordered ? 4 : names.length ? 2 : 0);
+      };
+      root.addEventListener('click', e => {
+        if (ordered && !e.target.closest('[data-clear]')) return;
+        const add = e.target.closest('[data-add]'), inc = e.target.closest('[data-inc]'), dec = e.target.closest('[data-dec]');
+        if (add || inc) { const n = (add || inc).dataset.add || inc.dataset.inc; cart[n] = (cart[n] || 0) + 1; sfx('click'); paint(); }
+        else if (dec) { const n = dec.dataset.dec; if (--cart[n] <= 0) delete cart[n]; sfx('tick'); paint(); }
+      });
+      orderBtn.addEventListener('click', () => {
+        if (!Object.keys(cart).length) return;
+        ordered = true; sfx('unlock');
+        out.hidden = false;
+        out.textContent = `ORDER PLACED. Sample order ID: SIM-${Math.random().toString(36).slice(2, 8).toUpperCase()}. Nothing was ordered; this is a model of the flow.`;
+        paint();
+      });
+      $('[data-clear]', root).addEventListener('click', () => { cart = {}; ordered = false; out.hidden = true; paint(); });
       paint();
-    });
-    resetBtn.addEventListener('click', () => {
-      chosen = []; done = false; out.hidden = true;
-      $$('.seat', grid).forEach(b => { b.classList.remove('is-sel'); if (!b.classList.contains('is-occ')) b.setAttribute('aria-pressed', 'false'); });
-      pax.innerHTML = emptyMsg; paint();
-    });
-    paint();
-  }
+    }
+  };
+  const SIMS = { seats: seatsSim, streak: streakSim, news: newsSim, shop: shopSim };
 
   function projectsMount(root) {
     const view = $('#archView', root);
     const items = $$('.arch__item', root);
-    let tab = 'spec';
+    let tab = 'spec', cur = null;
     const drawPanel = () => {
       const panel = $('#archPanel', view);
       $$('.btab', view).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
-      panel.innerHTML = tab === 'spec' ? specPanel() : tab === 'modules' ? modulesPanel() : simPanel();
-      if (tab === 'sim') mountSim(panel);
+      if (tab === 'spec') panel.innerHTML = specPanel(cur);
+      else if (tab === 'modules') panel.innerHTML = modulesPanel(cur);
+      else { const sim = SIMS[cur.sim]; panel.innerHTML = sim.html(cur); sim.mount(panel, cur); }
     };
     const select = id => {
       items.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.arch === id)));
-      if (id === '001') { view.innerHTML = archSpec(); tab = 'spec'; drawPanel(); }
+      const i = PROJECTS.findIndex(p => p.id === id);
+      if (i > -1) { cur = PROJECTS[i]; tab = 'spec'; view.innerHTML = archHead(cur, i); drawPanel(); }
       else view.innerHTML = `
-        <p class="lbl">ARCHIVE_002</p>
+        <p class="lbl">${arcLabel(PROJECTS.length)}</p>
         <div class="emptyslot"><svg class="ico" style="font-size:34px;color:var(--plum)" viewBox="0 0 24 24" aria-hidden="true">${ICONS.lock}</svg><p>Nothing here yet. The system has room left.</p><span class="note">STATUS: AWAITING NEXT BUILD</span></div>`;
     };
     root.addEventListener('click', e => {
+      const u = e.target.closest('[data-unset-live]');
+      if (u) { toast(`Live link for ${u.dataset.unsetLive} is not set yet. Add it in CONFIG.live in script.js.`); return; }
       const a = e.target.closest('[data-arch]'); if (a) return select(a.dataset.arch);
       const t = e.target.closest('[data-tab]'); if (t) { tab = t.dataset.tab; drawPanel(); }
     });
-    select('001');
+    root.addEventListener('select-project', e => select(e.detail));
+    select(PROJECTS[0].id);
   }
 
   /* ---- EXPERIENCE ---- */
@@ -641,7 +900,7 @@
     { id: 'about', file: 'ABOUT.EXE', icon: 'about', w: 800, h: 640, sys: 'PID 001 / USER', stat: 'PROFILE LOADED', next: 'memory', render: aboutHTML, mount: aboutMount },
     { id: 'memory', file: 'MEMORY.DAT', icon: 'memory', w: 640, h: 660, sys: 'PID 002 / LOG', stat: '4 CLOSED / 1 PENDING', next: 'skills', render: memoryHTML, mount: memoryMount },
     { id: 'skills', file: 'SKILLS.EXE', icon: 'skills', w: 780, h: 680, sys: 'PID 003 / MODULES', stat: '11 INSTALLED / 4 ACTIVE / 2 EXPLORING / 2 QUEUED', next: 'projects', render: skillsHTML, mount: skillsMount },
-    { id: 'projects', file: 'PROJECTS.EXE', icon: 'projects', w: 840, h: 680, sys: 'PID 004 / ARCHIVE', stat: '1 BUILD ARCHIVED', next: 'experience', render: projectsHTML, mount: projectsMount },
+    { id: 'projects', file: 'PROJECTS.EXE', icon: 'projects', w: 840, h: 680, sys: 'PID 004 / ARCHIVE', stat: `${PROJECTS.length} BUILDS INDEXED`, next: 'experience', render: projectsHTML, mount: projectsMount },
     { id: 'experience', file: 'EXPERIENCE.EXE', icon: 'experience', w: 860, h: 700, sys: 'PID 005 / PREVIOUS', stat: 'INSTANCE ARCHIVED', next: 'communication', render: experienceHTML, mount: experienceMount },
     { id: 'communication', file: 'COMMUNICATION.DLL', icon: 'communication', w: 680, h: 640, sys: 'PID 006 / LIB', stat: 'LIBRARY LOADED', next: 'quest', render: commHTML, mount: commMount },
     { id: 'quest', file: 'CURRENT_QUEST.EXE', icon: 'quest', w: 700, h: 700, sys: 'PID 007 / LIVE', stat: 'MAP INCOMPLETE', next: 'achievements', render: questHTML },
@@ -1054,7 +1313,9 @@
 
   /* expose a small API for fx.js and assistant.js */
   window.AOS = {
-    APPS, BY_ID, openApp, closeWin, wins, opened, toast, isMobile,
+    APPS, BY_ID, openApp,
+    PROJECTS,
+    selectProject: id => { const w = openApp('projects'); if (w) w.el.dispatchEvent(new CustomEvent('select-project', { detail: id })); }, closeWin, wins, opened, toast, isMobile,
     closeAll: () => Array.from(wins.values()).forEach(closeWin),
     get active() { return active; }
   };
