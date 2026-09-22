@@ -16,7 +16,7 @@
     github: 'https://github.com/AlooshianThings',     // e.g. 'https://github.com/your-username'
     linkedin: 'https://www.linkedin.com/in/alooshian-things/',   // e.g. 'https://www.linkedin.com/in/your-handle'
     // Optional project links, keyed by the project `id` in PROJECTS. Empty = button hidden.
-    live: { aaa: 'https://aaa-travels.onrender.com', streakster: 'https://streakster-theta.vercel.app/', news: 'https://aaa-news-omega.vercel.app/', aloosh: 'hhttps://alooshstick.vercel.app/' },   // e.g. 'https://streakster.vercel.app'
+    live: { aaa: 'https://aaa-travels.onrender.com', streakster: 'https://streakster-theta.vercel.app/', news: 'https://aaa-news-omega.vercel.app/', aloosh: 'https://alooshstick.vercel.app/' },   // e.g. 'https://streakster.vercel.app'
     repos: { aaa: 'https://github.com/AlooshianThings/AAA-Travels.git', streakster: 'https://github.com/AlooshianThings/Streakster.git', news: 'https://github.com/AlooshianThings/AAA-News.git', aloosh: 'https://github.com/AlooshianThings/Alooshstick.git' }   // e.g. 'https://github.com/you/streakster'
   };
 
