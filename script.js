@@ -16,8 +16,8 @@
     github: 'https://github.com/AlooshianThings',     // e.g. 'https://github.com/your-username'
     linkedin: 'https://www.linkedin.com/in/alooshian-things/',   // e.g. 'https://www.linkedin.com/in/your-handle'
     // Optional project links, keyed by the project `id` in PROJECTS. Empty = button hidden.
-    live: { aaa: 'https://aaa-travels.onrender.com', streakster: 'https://streakster-theta.vercel.app/', news: 'https://aaa-news-omega.vercel.app/', aloosh: 'https://alooshstick.vercel.app/' },   // e.g. 'https://streakster.vercel.app'
-    repos: { aaa: 'https://github.com/AlooshianThings/AAA-Travels.git', streakster: 'https://github.com/AlooshianThings/Streakster.git', news: 'https://github.com/AlooshianThings/AAA-News.git', aloosh: 'https://github.com/AlooshianThings/Alooshstick.git' }   // e.g. 'https://github.com/you/streakster'
+    live: { aaa: 'https://aaa-travels.onrender.com', streakster: 'https://streakster-theta.vercel.app/', news: 'https://aaa-news-omega.vercel.app/', aloosh: 'https://alooshstick.vercel.app/', friendsearcher: 'https://friendsearcher.vercel.app/' },   // e.g. 'https://streakster.vercel.app'
+    repos: { aaa: 'https://github.com/AlooshianThings/AAA-Travels.git', streakster: 'https://github.com/AlooshianThings/Streakster.git', news: 'https://github.com/AlooshianThings/AAA-News.git', aloosh: 'https://github.com/AlooshianThings/Alooshstick.git', friendsearcher: 'https://github.com/AlooshianThings/FriendSearcher' }   // e.g. 'https://github.com/you/streakster'
   };
 
   /* ---------------------------------------------------------------
@@ -266,6 +266,20 @@
         ['DEPLOYMENT', 'Deployed and live on the web.']
       ],
       sim: 'shop'
+    }
+    ,
+    {
+      id: 'friendsearcher', name: 'WHO DIS?', tag: 'LATEST BUILD',
+      status: 'DEPLOYED / FIRST BUILD', type: 'WEBSITE / BASIC SHOPPING SITE',
+      stack: ['HTML', 'CSS'],
+      lead: 'Her very first website, and the most basic of them all: a simple lipstick shopping site. Every system has a first line of code. This is the boot sector.',
+      layers: [
+        ['ORIGIN', 'I had a very wonderful college workshop which help me in making this project'],
+        ['FLOWS', 'Train the model and play which friend is it?'],
+        ['FRONT END', 'Its a quirky project which is made with HTML, CSS and JavaScript.'],
+        ['DEPLOYMENT', 'Deployed and live on the web.']
+      ],
+      sim: 'AI'
     }
     /* next build: copy one object above, change id / name / text, set sim: null or a key from SIMS. */
   ];
